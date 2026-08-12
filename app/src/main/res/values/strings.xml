@@ -1,0 +1,11 @@
+<resources>
+    <string name="app_name">MangaRu</string>
+    <string name="start_translation">Начать перевод</string>
+    <string name="stop_translation">Остановить перевод</string>
+    <string name="status_idle">Статус: Готов к работе</string>
+    <string name="status_running">Статус: Авто-перевод активен</string>
+    <string name="permission_overlay_title">Разрешение поверх других окон</string>
+    <string name="permission_overlay_desc">Необходимо для отображения переведенного текста поверх страницы манги.</string>
+    <string name="permission_btn">Предоставить доступ</string>
+    <string name="source_language">Язык оригинала:</string>
+</resources>
