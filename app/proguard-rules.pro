@@ -1,0 +1,2 @@
+-keep class com.mangaru.app.translator.** { *; }
+-keep class com.google.mlkit.** { *; }
