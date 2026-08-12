@@ -1,6 +1,6 @@
 package com.mangaru.app.service
 
-import com.mangaru.app.R
+import android.annotation.SuppressLint
 import android.app.Activity
 import android.app.Notification
 import android.app.PendingIntent
@@ -78,6 +78,7 @@ class ScreenCaptureService : Service() {
         return START_NOT_STICKY
     }
 
+    @SuppressLint("ForegroundServiceType")
     private fun startForegroundService() {
         val notificationIntent = Intent(this, MainActivity::class.java)
         val pendingIntent = PendingIntent.getActivity(
