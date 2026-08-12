@@ -1,4 +1,4 @@
-Name: Build MangaRu APK
+name: Build MangaRu APK
 
 on:
   push:
