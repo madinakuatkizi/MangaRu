@@ -1,5 +1,6 @@
 package com.mangaru.app.service
 
+import com.mangaru.app.R
 import android.app.Activity
 import android.app.Notification
 import android.app.PendingIntent
