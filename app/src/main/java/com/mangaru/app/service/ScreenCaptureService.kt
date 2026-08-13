@@ -86,11 +86,10 @@ class ScreenCaptureService : Service() {
             PendingIntent.FLAG_IMMUTABLE
         )
 
-        // Используем встроенный системный ресурс android.R.drawable, чтобы у Gradle не было шансов выдать ошибку
         val notification: Notification = NotificationCompat.Builder(this, MangaRuApp.CHANNEL_ID)
             .setContentTitle("MangaRu активен")
             .setContentText("Автоматический перевод экрана выполняется...")
-            .setSmallIcon(android.R.drawable.ic_menu)
+            .setSmallIcon(android.R.drawable.ic_dialog_info)
             .setContentIntent(pendingIntent)
             .setOngoing(true)
             .build()
