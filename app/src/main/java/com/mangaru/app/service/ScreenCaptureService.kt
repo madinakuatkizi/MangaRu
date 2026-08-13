@@ -18,8 +18,8 @@ import android.os.Build
 import android.os.IBinder
 import android.view.WindowManager
 import androidx.core.app.NotificationCompat
+
 import com.mangaru.app.MangaRuApp
-import com.mangaru.app.R
 import com.mangaru.app.ocr.MLKitOcrEngine
 import com.mangaru.app.overlay.FloatingControlView
 import com.mangaru.app.overlay.TranslatedBlockUI
@@ -86,10 +86,11 @@ class ScreenCaptureService : Service() {
             PendingIntent.FLAG_IMMUTABLE
         )
 
+        // Используем встроенный системный ресурс android.R.drawable, чтобы у Gradle не было шансов выдать ошибку
         val notification: Notification = NotificationCompat.Builder(this, MangaRuApp.CHANNEL_ID)
             .setContentTitle("MangaRu активен")
             .setContentText("Автоматический перевод экрана выполняется...")
-            .setSmallIcon(R.mipmap.ic_launcher)
+            .setSmallIcon(android.R.drawable.ic_menu)
             .setContentIntent(pendingIntent)
             .setOngoing(true)
             .build()
