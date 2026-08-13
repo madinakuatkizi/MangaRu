@@ -86,17 +86,10 @@ class ScreenCaptureService : Service() {
             PendingIntent.FLAG_IMMUTABLE
         )
 
-        // Используем встроенную иконку Android, чтобы исключить Unresolved Reference к ресурсу
-        val notificationIcon = try {
-            R.mipmap.ic_launcher
-        } catch (e: Exception) {
-            android.R.drawable.ic_menu_camera
-        }
-
         val notification: Notification = NotificationCompat.Builder(this, MangaRuApp.CHANNEL_ID)
             .setContentTitle("MangaRu активен")
             .setContentText("Автоматический перевод экрана выполняется...")
-            .setSmallIcon(notificationIcon)
+            .setSmallIcon(R.mipmap.ic_launcher)
             .setContentIntent(pendingIntent)
             .setOngoing(true)
             .build()
