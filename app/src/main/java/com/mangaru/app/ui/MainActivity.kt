@@ -1,5 +1,8 @@
 package com.mangaru.app.ui
 
+import android.app.Activity
+import android.app.NotificationChannel
+import android.app.NotificationManager
 import android.content.Context
 import android.content.Intent
 import android.media.projection.MediaProjectionManager
@@ -29,7 +32,7 @@ class MainActivity : AppCompatActivity() {
     private val capturePermissionLauncher = registerForActivityResult(
         ActivityResultContracts.StartActivityForResult()
     ) { result ->
-        if (result.resultCode == RESULT_OK && result.data != null) {
+        if (result.resultCode == Activity.RESULT_OK && result.data != null) {
             startCaptureService(result.resultCode, result.data!!)
         } else {
             Toast.makeText(this, "Захват экрана отменен", Toast.LENGTH_SHORT).show()
@@ -38,19 +41,29 @@ class MainActivity : AppCompatActivity() {
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate()
-        try {
-            setContentView(R.layout.activity_main)
+        setContentView(R.layout.activity_main)
 
-            val btnStart = findViewById<Button>(R.id.btnStart)
-            btnStart?.setOnClickListener {
-                if (!checkOverlayPermission()) {
-                    requestOverlayPermission()
-                } else {
-                    requestMediaProjection()
-                }
+        createNotificationChannel()
+
+        val btnStart = findViewById<Button>(R.id.btnStart)
+        btnStart?.setOnClickListener {
+            if (!checkOverlayPermission()) {
+                requestOverlayPermission()
+            } else {
+                requestMediaProjection()
             }
-        } catch (e: Exception) {
-            Toast.makeText(this, "Ошибка запуска: ${e.localizedMessage}", Toast.LENGTH_LONG).show()
+        }
+    }
+
+    private fun createNotificationChannel() {
+        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O) {
+            val channel = NotificationChannel(
+                "mangaru_channel",
+                "MangaRu Service Channel",
+                NotificationManager.IMPORTANCE_LOW
+            )
+            val manager = getSystemService(Context.NOTIFICATION_SERVICE) as NotificationManager
+            manager.createNotificationChannel(channel)
         }
     }
 
