@@ -1,75 +1,91 @@
 package com.mangaru.app.ui
 
-import android.app.Activity
 import android.content.Context
 import android.content.Intent
 import android.media.projection.MediaProjectionManager
+import android.net.Uri
+import android.os.Build
 import android.os.Bundle
-import androidx.activity.ComponentActivity
-import androidx.activity.compose.setContent
+import android.provider.Settings
+import android.widget.Button
+import android.widget.Toast
 import androidx.activity.result.contract.ActivityResultContracts
-import androidx.compose.runtime.*
+import androidx.appcompat.app.AppCompatActivity
+import com.mangaru.app.R
 import com.mangaru.app.service.ScreenCaptureService
-import com.mangaru.app.ui.theme.MangaRuTheme
-import com.mangaru.app.util.PermissionUtils
 
-class MainActivity : ComponentActivity() {
+class MainActivity : AppCompatActivity() {
 
-    private var isServiceRunning by mutableStateOf(false)
-    private var hasOverlayPermission by mutableStateOf(false)
-    private var selectedLanguage by mutableStateOf("ja")
+    private val overlayPermissionLauncher = registerForActivityResult(
+        ActivityResultContracts.StartActivityForResult()
+    ) {
+        if (checkOverlayPermission()) {
+            requestMediaProjection()
+        } else {
+            Toast.makeText(this, "Нужно разрешение поверх других окон", Toast.LENGTH_SHORT).show()
+        }
+    }
 
-    private val mediaProjectionLauncher = registerForActivityResult(
+    private val capturePermissionLauncher = registerForActivityResult(
         ActivityResultContracts.StartActivityForResult()
     ) { result ->
-        if (result.resultCode == Activity.RESULT_OK && result.data != null) {
-            val serviceIntent = Intent(this, ScreenCaptureService::class.java).apply {
-                putExtra(ScreenCaptureService.EXTRA_RESULT_CODE, result.resultCode)
-                putExtra(ScreenCaptureService.EXTRA_DATA, result.data)
-                putExtra(ScreenCaptureService.EXTRA_LANGUAGE, selectedLanguage)
-            }
-            startForegroundService(serviceIntent)
-            isServiceRunning = true
+        if (result.resultCode == RESULT_OK && result.data != null) {
+            startCaptureService(result.resultCode, result.data!!)
+        } else {
+            Toast.makeText(this, "Захват экрана отменен", Toast.LENGTH_SHORT).show()
         }
     }
 
     override fun onCreate(savedInstanceState: Bundle?) {
-        super.onCreate(savedInstanceState) // Передаем savedInstanceState обратно в родительский класс
+        super.onCreate()
+        try {
+            setContentView(R.layout.activity_main)
 
-        setContent {
-            MangaRuTheme {
-                MainScreen(
-                    isServiceRunning = isServiceRunning,
-                    hasOverlayPermission = hasOverlayPermission,
-                    selectedLanguage = selectedLanguage,
-                    onLanguageSelected = { selectedLanguage = it },
-                    onRequestOverlayPermission = {
-                        PermissionUtils.requestOverlayPermission(this)
-                    },
-                    onStartClick = { startTranslationProcess() },
-                    onStopClick = { stopTranslationProcess() }
-                )
+            val btnStart = findViewById<Button>(R.id.btnStart)
+            btnStart?.setOnClickListener {
+                if (!checkOverlayPermission()) {
+                    requestOverlayPermission()
+                } else {
+                    requestMediaProjection()
+                }
             }
+        } catch (e: Exception) {
+            Toast.makeText(this, "Ошибка запуска: ${e.localizedMessage}", Toast.LENGTH_LONG).show()
         }
     }
 
-    override fun onResume() {
-        super.onResume()
-        hasOverlayPermission = PermissionUtils.hasOverlayPermission(this)
+    private fun checkOverlayPermission(): Boolean {
+        return if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.M) {
+            Settings.canDrawOverlays(this)
+        } else {
+            true
+        }
     }
 
-    private fun startTranslationProcess() {
-        if (!hasOverlayPermission) {
-            PermissionUtils.requestOverlayPermission(this)
-            return
+    private fun requestOverlayPermission() {
+        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.M) {
+            val intent = Intent(
+                Settings.ACTION_MANAGE_OVERLAY_PERMISSION,
+                Uri.parse("package:$packageName")
+            )
+            overlayPermissionLauncher.launch(intent)
         }
+    }
+
+    private fun requestMediaProjection() {
         val projectionManager = getSystemService(Context.MEDIA_PROJECTION_SERVICE) as MediaProjectionManager
-        mediaProjectionLauncher.launch(projectionManager.createScreenCaptureIntent())
+        capturePermissionLauncher.launch(projectionManager.createScreenCaptureIntent())
     }
 
-    private fun stopTranslationProcess() {
-        val serviceIntent = Intent(this, ScreenCaptureService::class.java)
-        stopService(serviceIntent)
-        isServiceRunning = false
+    private fun startCaptureService(resultCode: Int, data: Intent) {
+        val intent = Intent(this, ScreenCaptureService::class.java).apply {
+            putExtra("EXTRA_RESULT_CODE", resultCode)
+            putExtra("EXTRA_DATA", data)
+        }
+        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O) {
+            startForegroundService(intent)
+        } else {
+            startService(intent)
+        }
     }
 }
